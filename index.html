@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finance Tracker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #ffffff;
+      color: #333;
+    }
+
+    .app {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 4px;
+    }
+
+    .subtitle {
+      margin-bottom: 20px;
+      color: #666;
+    }
+
+    .summary {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .summary-card {
+      flex: 1;
+      border: 1px solid #ddd;
+      padding: 14px;
+      background: #fff;
+    }
+
+    .summary-card h3 {
+      font-size: 13px;
+      color: #888;
+      margin-bottom: 4px;
+    }
+
+    .income-amount {
+      color: green;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .expense-amount {
+      color: red;
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .balance-amount {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .add-transaction {
+      border: 1px solid #ddd;
+      padding: 16px;
+      margin-bottom: 24px;
+      background: #fff;
+    }
+
+    .add-transaction h2 {
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+
+    form {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    form input,
+    form select {
+      padding: 8px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    form input[type="text"] {
+      flex: 2;
+    }
+
+    form input[type="number"] {
+      flex: 1;
+    }
+
+    form select {
+      flex: 1;
+    }
+
+    form button {
+      padding: 8px 20px;
+      background: #333;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+    }
+
+    form button:hover {
+      background: #555;
+    }
+
+    .transactions {
+      margin-bottom: 24px;
+    }
+
+    .transactions h2 {
+      font-size: 16px;
+      margin-bottom: 12px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .filters select {
+      padding: 6px;
+      border: 1px solid #ccc;
+      font-size: 13px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: #f5f5f5;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+      font-size: 14px;
+    }
+
+    th {
+      font-size: 12px;
+      color: #888;
+      text-transform: uppercase;
+    }
+
+    td.income-amount,
+    td.expense-amount {
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>Finance Tracker</h1>
+    <p class="subtitle">Track your income and expenses</p>
+
+    <div class="summary">
+      <div class="summary-card">
+        <h3>Income</h3>
+        <p class="income-amount" id="total-income">$0.00</p>
+      </div>
+      <div class="summary-card">
+        <h3>Expenses</h3>
+        <p class="expense-amount" id="total-expenses">$0.00</p>
+      </div>
+      <div class="summary-card">
+        <h3>Balance</h3>
+        <p class="balance-amount" id="total-balance">$0.00</p>
+      </div>
+    </div>
+
+    <div class="add-transaction">
+      <h2>Add Transaction</h2>
+      <form id="add-form">
+        <input type="text" id="input-description" placeholder="Description" />
+        <input type="number" id="input-amount" placeholder="Amount" min="0" step="0.01" />
+        <select id="input-type">
+          <option value="income">Income</option>
+          <option value="expense" selected>Expense</option>
+        </select>
+        <select id="input-category">
+          <option value="food">food</option>
+          <option value="housing">housing</option>
+          <option value="utilities">utilities</option>
+          <option value="transport">transport</option>
+          <option value="entertainment">entertainment</option>
+          <option value="salary">salary</option>
+          <option value="other">other</option>
+        </select>
+        <button type="submit">Add</button>
+      </form>
+    </div>
+
+    <div class="transactions">
+      <h2>Transactions</h2>
+      <div class="filters">
+        <select id="filter-type">
+          <option value="all">All Types</option>
+          <option value="income">Income</option>
+          <option value="expense">Expense</option>
+        </select>
+        <select id="filter-category">
+          <option value="all">All Categories</option>
+          <option value="food">food</option>
+          <option value="housing">housing</option>
+          <option value="utilities">utilities</option>
+          <option value="transport">transport</option>
+          <option value="entertainment">entertainment</option>
+          <option value="salary">salary</option>
+          <option value="other">other</option>
+        </select>
+      </div>
+
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Category</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody id="transactions-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    let transactions = [
+      { id: 1, description: "Salary",        amount: 5000, type: "income",  category: "salary",        date: "2025-01-01" },
+      { id: 2, description: "Rent",           amount: 1200, type: "expense", category: "housing",       date: "2025-01-02" },
+      { id: 3, description: "Groceries",      amount: 150,  type: "expense", category: "food",          date: "2025-01-03" },
+      { id: 4, description: "Freelance Work", amount: 800,  type: "expense", category: "salary",        date: "2025-01-05" },
+      { id: 5, description: "Electric Bill",  amount: 95,   type: "expense", category: "utilities",     date: "2025-01-06" },
+      { id: 6, description: "Dinner Out",     amount: 65,   type: "expense", category: "food",          date: "2025-01-07" },
+      { id: 7, description: "Gas",            amount: 45,   type: "expense", category: "transport",     date: "2025-01-08" },
+      { id: 8, description: "Netflix",        amount: 15,   type: "expense", category: "entertainment", date: "2025-01-10" },
+    ];
+
+    function escape(str) {
+      const div = document.createElement('div');
+      div.textContent = String(str);
+      return div.innerHTML;
+    }
+
+    function render() {
+      const filterType     = document.getElementById('filter-type').value;
+      const filterCategory = document.getElementById('filter-category').value;
+
+      const totalIncome    = transactions.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+      const totalExpenses  = transactions.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+      const balance        = totalIncome - totalExpenses;
+
+      document.getElementById('total-income').textContent   = '$' + totalIncome.toFixed(2);
+      document.getElementById('total-expenses').textContent = '$' + totalExpenses.toFixed(2);
+      document.getElementById('total-balance').textContent  = '$' + balance.toFixed(2);
+
+      let filtered = transactions;
+      if (filterType !== 'all')     filtered = filtered.filter(t => t.type === filterType);
+      if (filterCategory !== 'all') filtered = filtered.filter(t => t.category === filterCategory);
+
+      const tbody = document.getElementById('transactions-body');
+      tbody.innerHTML = filtered.map(t => `
+        <tr>
+          <td>${escape(t.date)}</td>
+          <td>${escape(t.description)}</td>
+          <td>${escape(t.category)}</td>
+          <td class="${t.type === 'income' ? 'income-amount' : 'expense-amount'}">
+            ${t.type === 'income' ? '+' : '-'}$${t.amount.toFixed(2)}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('add-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const description = document.getElementById('input-description').value.trim();
+      const amount      = parseFloat(document.getElementById('input-amount').value);
+      const type        = document.getElementById('input-type').value;
+      const category    = document.getElementById('input-category').value;
+
+      if (!description || isNaN(amount) || amount <= 0) return;
+
+      transactions.push({
+        id: Date.now(),
+        description,
+        amount,
+        type,
+        category,
+        date: new Date().toISOString().split('T')[0],
+      });
+
+      document.getElementById('input-description').value = '';
+      document.getElementById('input-amount').value = '';
+      document.getElementById('input-type').value = 'expense';
+      document.getElementById('input-category').value = 'food';
+
+      render();
+    });
+
+    document.getElementById('filter-type').addEventListener('change', render);
+    document.getElementById('filter-category').addEventListener('change', render);
+
+    render();
+  </script>
+</body>
+</html>
